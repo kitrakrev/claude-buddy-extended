@@ -1,5 +1,5 @@
 /**
- * ASCII art for all 18 buddy species
+ * ASCII art for all buddy species
  *
  * Each species has 3 animation frames (idle variations).
  * Each frame is 5 lines, ~12 chars wide.
@@ -12,6 +12,7 @@ import { HAT_ART } from "../core/art-data.ts";
 
 export { HAT_ART };
 import { getRarityColor } from "./theme.ts";
+import { getCustomFrames } from "./custom-art.ts";
 
 // ─── Species art: 3 frames × 5 lines each ──────────────────────────────────
 
@@ -249,7 +250,7 @@ function dpad(s: string, targetW: number): string {
 // ─── Render functions ───────────────────────────────────────────────────────
 
 export function getArtFrame(species: Species, eye: string, frame: number = 0): string[] {
-  const frames = SPECIES_ART[species];
+  const frames = getCustomFrames(species) ?? SPECIES_ART[species];
   const f = frames[frame % frames.length];
   const glyph = resolveEyeGlyph(eye);
   return f.map((line) => line.replace(/\{E\}/g, glyph));
@@ -271,7 +272,8 @@ export function getStatusFrames(bones: BuddyBones): {
   frameSequence: number[];
 } {
   const resolveFrame = (frameIdx: number, eyeGlyph: string): string => {
-    const raw = SPECIES_ART[bones.species][frameIdx];
+    const src = getCustomFrames(bones.species) ?? SPECIES_ART[bones.species];
+    const raw = src[frameIdx];
     const art = raw.map((line) => line.replace(/\{E\}/g, eyeGlyph));
     const hatLine = HAT_ART[bones.hat];
     if (hatLine && !art[0].trim()) {
