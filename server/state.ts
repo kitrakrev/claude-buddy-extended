@@ -489,6 +489,16 @@ function deriveMinimalFrames(bones: BuddyBones, eye: string): string[] {
   const face = renderFace(bones.species, eye, bones.skin);
   return Array.from({ length: 4 }, () => face);
 }
+// Omitted `muted` keeps the current status-line mute instead of silently unmuting
+// on every unrelated write (rename, skin, summon...).
+function readMuted(): boolean {
+  try {
+    return JSON.parse(readFileSync(STATUS_FILE(), "utf8")).muted === true;
+  } catch {
+    return false;
+  }
+}
+
 export function writeStatusState(
   companion: Companion,
   reaction?: string,
@@ -545,7 +555,7 @@ export function writeStatusState(
     shiny: companion.bones.shiny,
     hat: companion.bones.hat,
     reaction: "",
-    muted: muted ?? false,
+    muted: muted ?? readMuted(),
     achievement: achievement ?? "",
     achievementAt: achievement ? Date.now() : 0,
     frames,
