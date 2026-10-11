@@ -5,7 +5,7 @@ Runtime-loadable buddy skins — add a new drawing with **no code edit** and
 
 ## Why these are separate from `server/art.ts`
 
-The built-in species in `server/engine.ts` (`SPECIES`) form a fixed pool that
+The built-in species in `core/engine.ts` (`SPECIES`) form a fixed pool that
 the generator picks from by index. Adding an entry there changes `SPECIES.length`,
 which re-rolls the species of *every existing buddy* — the golden snapshot tests
 guard against exactly that. Custom art sidesteps it: it is an **override layer**

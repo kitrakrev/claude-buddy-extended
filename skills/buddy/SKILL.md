@@ -7,11 +7,13 @@ allowed-tools: mcp__claude_buddy__*, Bash
 
 # Buddy — Your Coding Companion
 
-Handle the user's `/buddy` command using the coding-buddy MCP tools.
+Handle the user's `/buddy` command. Typed commands run through the LLM-free CLI
+dispatcher (see **Routing** below); only `buddy_react`, `buddy_suggest` and the
+`uninstall` sequence need the coding-buddy MCP tools.
 
 ## Fallback: MCP Tools Unavailable
 
-**Before routing any command, check whether `mcp__claude_buddy__*` tools are registered in this session.** If they are NOT — Claude Code was unable to start the coding-buddy MCP server — do not attempt to call any buddy tool. The tool calls will fail with an unhelpful "tool not found" error. Instead, run this diagnostic and report the result to the user so they can fix the underlying cause:
+**Before calling any MCP buddy tool, check whether `mcp__claude_buddy__*` tools are registered in this session.** If they are NOT — Claude Code was unable to start the coding-buddy MCP server — do not attempt to call any buddy tool. Typed commands in the **Routing** table still work through the dispatcher; the diagnostic below is for the MCP-only paths. The tool calls will fail with an unhelpful "tool not found" error. Instead, run this diagnostic and report the result to the user so they can fix the underlying cause:
 
 1. Check bun availability:
    ```bash
@@ -31,18 +33,19 @@ Handle the user's `/buddy` command using the coding-buddy MCP tools.
 
 3. If `$CLAUDE_CONFIG_DIR` is set in the environment, use that directory instead of `~/.claude` when searching for the launcher.
 
-4. **Do not proceed with any buddy command in this session.** Tell the user: the MCP server is not running, here is what the diagnostic found, here is the recommended fix, and Claude Code must be restarted after the fix before buddy tools will be available.
+4. **Do not call MCP-only paths (`buddy_react`, `buddy_suggest`, `uninstall` / `buddy_uninstall`) in this session.** Typed commands from the Routing table can still run via the dispatcher. Tell the user: the MCP server is not running, here is what the diagnostic found, here is the recommended fix, and Claude Code must be restarted after the fix before the MCP-only paths will be available.
 
 ## Routing: run the LLM-free dispatcher
 
 **Every typed `/buddy` command is a pure config/state operation — route it to the
 CLI dispatcher, not an MCP tool.** The dispatcher (`cli/buddy.ts`) mirrors each
 MCP tool exactly: same state writes, same output strings, same achievements. It
-runs as plain bun with no model round-trip. Run from the plugin directory and
-output its result verbatim (CRITICAL OUTPUT RULES below still apply):
+runs as plain bun with no model round-trip. Resolve it from the plugin root so it
+works from any project directory, and output its result verbatim (CRITICAL
+OUTPUT RULES below still apply):
 
 ```bash
-bun run cli/buddy.ts <command> [args]
+bun run "${CLAUDE_PLUGIN_ROOT}/cli/buddy.ts" <command> [args]
 ```
 
 Argument mapping (pass args positionally after the command):
@@ -66,16 +69,16 @@ Argument mapping (pass args positionally after the command):
 | `save [slot]`            | `buddy.ts save [slot]`                     |
 | `list`                   | `buddy.ts list`                           |
 | `dismiss <slot>`         | `buddy.ts dismiss <slot>`                 |
-| `skin [name]`            | `buddy.ts skin [name]`                    |
+| `skin [name/reset]`      | `buddy.ts skin [name/reset]`              |
 | `frequency [seconds]`    | `buddy.ts frequency [seconds]`            |
-| `style [classic\|round]` | `buddy.ts style [classic\|round]`         |
-| `position [top\|left]`   | `buddy.ts position [top\|left]`           |
-| `rarity [on\|off]`       | `buddy.ts rarity [on\|off]`               |
+| `style [classic/round]` | `buddy.ts style [classic/round]`         |
+| `position [top/left]`   | `buddy.ts position [top/left]`           |
+| `rarity [on/off]`       | `buddy.ts rarity [on/off]`               |
 | `width <10-60>`          | `buddy.ts width <n>`                       |
 | `margin <0-20>`          | `buddy.ts margin <n>`                      |
-| `rainbow [#hex...\|reset]`| `buddy.ts rainbow [#hex...\|reset]`       |
-| `statusline [on\|off\|combined\|basic]` | `buddy.ts statusline [on\|off\|combined\|basic]` |
-| `theme [dark\|light\|auto]` | `buddy.ts theme [dark\|light\|auto]`   |
+| `rainbow [#hex.../reset]`| `buddy.ts rainbow [#hex.../reset]`       |
+| `statusline [on/off/combined/basic]` | `buddy.ts statusline [on/off/combined/basic]` |
+| `theme [dark/light/auto]` | `buddy.ts theme [dark/light/auto]`   |
 | `pick`                   | Tell user to run `! bun run pick` (interactive TUI) |
 | `uninstall`              | Run the uninstall sequence (see **Uninstall Orchestration** below) |
 

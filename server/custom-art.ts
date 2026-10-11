@@ -52,7 +52,7 @@ function isValidShape(d: unknown): d is CustomArt {
 /** Load every valid custom-art JSON, keyed by its declared name. */
 export function loadCustomArt(): Record<string, CustomArt> {
   if (cache) return cache;
-  const out: Record<string, CustomArt> = {};
+  const out: Record<string, CustomArt> = Object.create(null);
   if (existsSync(CUSTOM_ART_DIR())) {
     for (const f of readdirSync(CUSTOM_ART_DIR())) {
       if (!f.endsWith(".json")) continue;

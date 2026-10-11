@@ -486,7 +486,7 @@ function deriveCompactFrames(fullFrames: string[]): string[] {
 
 function deriveMinimalFrames(bones: BuddyBones, eye: string): string[] {
   const { renderFace } = require("../core/engine.ts") as typeof CoreEngine;
-  const face = renderFace(bones.species, eye);
+  const face = renderFace(bones.species, eye, bones.skin);
   return Array.from({ length: 4 }, () => face);
 }
 export function writeStatusState(
@@ -540,7 +540,7 @@ export function writeStatusState(
     species: companion.bones.species,
     rarity: companion.bones.rarity,
     stars: RARITY_STARS[companion.bones.rarity],
-    face: renderFace(companion.bones.species, safeEye),
+    face: renderFace(companion.bones.species, safeEye, companion.bones.skin),
     eye: safeEye,
     shiny: companion.bones.shiny,
     hat: companion.bones.hat,

@@ -158,7 +158,7 @@ function cmdShow(): void {
 
   const reaction = loadReaction();
   if (reaction) {
-    const face = renderFace(companion.bones.species, companion.bones.eye);
+    const face = renderFace(companion.bones.species, companion.bones.eye, companion.bones.skin);
     console.log(`  ${face} "${reaction.reaction}"`);
     console.log("");
   }
@@ -174,7 +174,7 @@ function cmdPet(): void {
     bones.stats,
   );
   saveReaction(reaction, "pet");
-  const face = renderFace(bones.species, bones.eye);
+  const face = renderFace(bones.species, bones.eye, bones.skin);
   console.log(`${face} ${companion.name}: "${reaction}"`);
 }
 
@@ -284,13 +284,11 @@ function cmdSave(): void {
   const targetSlot = slotArg ? slugify(slotArg) : slugify(companion.name);
   // The MCP tool's saveCompanionSlot throws on an existing slot even though the
   // tool advertises overwrite. Honor the advertised behavior: overwrite.
-  try {
-    saveCompanionSlot(companion, targetSlot);
-  } catch {
-    updateCompanionSlot(targetSlot, companion);
-  }
+  const exists = loadCompanionSlot(targetSlot) !== null;
+  if (exists) updateCompanionSlot(targetSlot, companion);
+  else saveCompanionSlot(companion, targetSlot);
   saveActiveSlot(targetSlot);
-  incrementEvent("buddies_collected", 1);
+  if (!exists) incrementEvent("buddies_collected", 1);
   incrementEvent("saves", 1);
   console.log(`${companion.name} saved to slot "${targetSlot}".${achNotice()}`);
 }
@@ -334,8 +332,17 @@ function cmdSkin(): void {
       console.log("Available skins:");
       for (const n of available) console.log(`  ${n}`);
       console.log("");
-      console.log("Apply with: bun run cli/buddy.ts skin <name>");
+      console.log("Apply with: bun run cli/buddy.ts skin <name>  (clear with: skin reset)");
     }
+    return;
+  }
+
+  if (target === "reset") {
+    const companion = requireActive();
+    delete companion.bones.skin;
+    saveCompanion(companion);
+    writeStatusState(companion);
+    console.log(`${companion.name} is back to the default ${companion.bones.species} look.`);
     return;
   }
 
@@ -350,7 +357,7 @@ function cmdSkin(): void {
   }
 
   const companion = requireActive();
-  companion.bones.species = target as typeof companion.bones.species;
+  companion.bones.skin = target;
   saveCompanion(companion);
   writeStatusState(companion);
   console.log(`${companion.name} now wears the "${target}" skin.`);
@@ -711,7 +718,7 @@ function cmdHelp(): void {
     "  buddy save [slot]   Save current buddy to a named slot",
     "  buddy list          List all saved buddies",
     "  buddy dismiss <slot>  Remove a saved buddy slot",
-    "  buddy skin [name]   List / apply custom art",
+    "  buddy skin [name|reset]  List / apply / clear custom art",
     "  buddy frequency [s] Show or set comment cooldown",
     "  buddy style [classic|round]   Bubble style",
     "  buddy position [top|left]     Bubble position",

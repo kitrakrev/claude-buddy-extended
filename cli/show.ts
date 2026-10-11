@@ -25,7 +25,7 @@ console.log("");
 
 const reaction = loadReaction();
 if (reaction) {
-  const face = renderFace(companion.bones.species, companion.bones.eye);
+  const face = renderFace(companion.bones.species, companion.bones.eye, companion.bones.skin);
   console.log(`  ${face} "${reaction.reaction}"`);
   console.log("");
 }

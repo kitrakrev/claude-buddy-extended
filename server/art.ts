@@ -249,8 +249,8 @@ function dpad(s: string, targetW: number): string {
 }
 // ─── Render functions ───────────────────────────────────────────────────────
 
-export function getArtFrame(species: Species, eye: string, frame: number = 0): string[] {
-  const frames = getCustomFrames(species) ?? SPECIES_ART[species];
+export function getArtFrame(species: Species, eye: string, frame: number = 0, skin?: string): string[] {
+  const frames = (skin ? getCustomFrames(skin) : null) ?? getCustomFrames(species) ?? SPECIES_ART[species];
   const f = frames[frame % frames.length];
   const glyph = resolveEyeGlyph(eye);
   return f.map((line) => line.replace(/\{E\}/g, glyph));
@@ -272,7 +272,7 @@ export function getStatusFrames(bones: BuddyBones): {
   frameSequence: number[];
 } {
   const resolveFrame = (frameIdx: number, eyeGlyph: string): string => {
-    const src = getCustomFrames(bones.species) ?? SPECIES_ART[bones.species];
+    const src = (bones.skin ? getCustomFrames(bones.skin) : null) ?? getCustomFrames(bones.species) ?? SPECIES_ART[bones.species];
     const raw = src[frameIdx];
     const art = raw.map((line) => line.replace(/\{E\}/g, eyeGlyph));
     const hatLine = HAT_ART[bones.hat];
@@ -309,7 +309,7 @@ export function getStatusFrames(bones: BuddyBones): {
   return {
     frames,
     compactFrames: deriveCompactFrames(frames),
-    minimalFrames: Array.from({ length: frames.length }, () => renderFace(bones.species, eye)),
+    minimalFrames: Array.from({ length: frames.length }, () => renderFace(bones.species, eye, bones.skin)),
     frameSequence: [...STATUS_FRAME_SEQUENCE],
   };
 }
@@ -325,7 +325,7 @@ export function renderCompanionCard(
   const color = getRarityColor(bones.rarity);
   const stars = RARITY_STARS[bones.rarity];
   const shiny = bones.shiny ? `${SHINY_COLOR}\u2728 ${NC}` : "";
-  const art = getArtFrame(bones.species, bones.eye, frame);
+  const art = getArtFrame(bones.species, bones.eye, frame, bones.skin);
   applyHat(bones.species, bones.hat, art);
 
   // Build the card
@@ -435,7 +435,7 @@ export function renderCompanionCardMarkdown(
   const dot = RARITY_DOT[bones.rarity];
   const stars = RARITY_STARS[bones.rarity];
   const shiny = bones.shiny ? " \u2728" : "";
-  const art = getArtFrame(bones.species, bones.eye, frame);
+  const art = getArtFrame(bones.species, bones.eye, frame, bones.skin);
   applyHat(bones.species, bones.hat, art);
 
   // Strip empty lines from art for cleaner rendering

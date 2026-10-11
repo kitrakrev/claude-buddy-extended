@@ -1360,7 +1360,7 @@ function BuddyCardPane({ companion, slot, isActive, editablePersonality, editCur
   const color = RARITY_COLOR[b.rarity] ?? "white";
   const stars = RARITY_STARS[b.rarity];
   const shiny = b.shiny ? " ✨" : "";
-  const art = getArtFrame(b.species, b.eye, 0);
+  const art = getArtFrame(b.species, b.eye, 0, b.skin);
   const hatLine = HAT_ART[b.hat];
   if (hatLine && !art[0].trim()) art[0] = hatLine;
   const reaction = loadReaction();

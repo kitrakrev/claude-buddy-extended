@@ -129,6 +129,8 @@ export interface BuddyBones {
   stats: BuddyStats;
   peak: StatName;
   dump: StatName;
+  /** Custom-art name worn over the species art (see `buddy skin`). Never replaces `species`. */
+  skin?: string;
 }
 
 export interface Companion {
@@ -410,15 +412,15 @@ const FACE_TEMPLATES: Record<Species, string> = {
   pikachu: "({E}ω{E})",
 };
 
-export function renderFace(species: Species, eye: string): string {
+export function renderFace(species: Species, eye: string, skin?: string): string {
   const { getCustomFace } =
     require("../server/custom-art.ts") as typeof import("../server/custom-art.ts");
-  const tmpl = getCustomFace(species) ?? FACE_TEMPLATES[species];
+  const tmpl = (skin ? getCustomFace(skin) : null) ?? getCustomFace(species) ?? FACE_TEMPLATES[species];
   return (tmpl ?? "({E})").replace(/\{E\}/g, resolveEyeGlyph(eye));
 }
 
 export function renderBuddy(bones: BuddyBones): string {
-  const face = renderFace(bones.species, bones.eye);
+  const face = renderFace(bones.species, bones.eye, bones.skin);
   const hat = HAT_ART[bones.hat];
   const shiny = bones.shiny ? "\u2728 " : "";
   const stars = RARITY_STARS[bones.rarity];
@@ -451,7 +453,7 @@ export function renderCompact(
   name: string,
   reaction?: string,
 ): string {
-  const face = renderFace(bones.species, bones.eye);
+  const face = renderFace(bones.species, bones.eye, bones.skin);
   const shiny = bones.shiny ? "\u2728" : "";
   const stars = RARITY_STARS[bones.rarity];
   const msg = reaction ? ` \u2502 "${reaction}"` : "";
