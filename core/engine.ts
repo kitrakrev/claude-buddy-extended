@@ -420,15 +420,28 @@ export function renderFace(species: Species, eye: string, faceTemplate?: string)
   return (faceTemplate ?? FACE_TEMPLATES[species]).replace(/\{E\}/g, resolveEyeGlyph(eye));
 }
 
-export function renderBuddy(bones: BuddyBones, faceTemplate?: string): string {
+/**
+ * `faceTemplate` / `artFrame` let callers pass a resolved custom skin in.
+ * When `artFrame` (5 lines, `{E}` placeholders) is given it is drawn instead
+ * of the face, with the hat overlaid on a blank top line.
+ */
+export function renderBuddy(bones: BuddyBones, faceTemplate?: string, artFrame?: string[]): string {
   const face = renderFace(bones.species, bones.eye, faceTemplate);
   const hat = HAT_ART[bones.hat];
   const shiny = bones.shiny ? "\u2728 " : "";
   const stars = RARITY_STARS[bones.rarity];
 
   const lines: string[] = [];
-  if (hat) lines.push(hat);
-  lines.push(`  ${face}`);
+  if (artFrame) {
+    const eye = resolveEyeGlyph(bones.eye);
+    const art = artFrame.map((l) => l.replace(/\{E\}/g, eye));
+    if (hat && !art[0].trim()) art[0] = hat;
+    else if (hat) lines.push(hat);
+    lines.push(...art.filter((l) => l.trim() !== ""));
+  } else {
+    if (hat) lines.push(hat);
+    lines.push(`  ${face}`);
+  }
   lines.push("");
   lines.push(`${shiny}${bones.rarity} ${bones.species} ${stars}`);
   lines.push("");

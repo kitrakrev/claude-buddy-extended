@@ -19,7 +19,7 @@ if (!companion) {
 
 console.log("");
 const skin = skinFor(companion.bones);
-console.log(renderBuddy(companion.bones, skin?.face));
+console.log(renderBuddy(companion.bones, skin?.face, skin?.art[0]));
 console.log("");
 console.log(`  ${BOLD}${companion.name}${NC}`);
 console.log(`  ${DIM}${companion.personality}${NC}`);

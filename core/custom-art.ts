@@ -44,6 +44,7 @@ export function skinLineWidth(line: string): number {
       continue;
     }
     const wide =
+      /\p{Emoji_Presentation}/u.test(ch) ||
       (cp >= 0x1100 && cp <= 0x115f) ||
       (cp >= 0x2e80 && cp <= 0xa4cf) ||
       (cp >= 0xac00 && cp <= 0xd7a3) ||

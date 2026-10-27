@@ -40,6 +40,12 @@ describe("validateSkin", () => {
     s.art[0][0] = "\u2764\ufe0f".repeat(7);
     expect(validateSkin(s).errors.join()).toContain("exceeds");
   });
+  test("counts Emoji_Presentation chars (no VS16) as two columns", () => {
+    expect(skinLineWidth("\u231a")).toBe(2);
+    const s = good();
+    s.art[0][0] = "\u231a".repeat(12);
+    expect(validateSkin(s).errors.join()).toContain("exceeds");
+  });
   test("rejects wrong frame shape", () => {
     expect(validateSkin({ ...good(), art: [["a"]] }).skin).toBeNull();
   });
@@ -52,5 +58,15 @@ describe("resolveSkin", () => {
     expect(resolveSkin(skins, { species: "cat", skin: "fox-cat" })).toBe(skin);
     expect(resolveSkin(skins, { species: "cat" })).toBeNull();
     expect(resolveSkin(skins, { species: "duck", skin: "fox-cat" })).toBeNull();
+  });
+});
+
+describe("renderBuddy with skin art", () => {
+  test("draws skin frame with hat overlay", async () => {
+    const { renderBuddy, generateBones } = await import("./engine.ts");
+    const bones = { ...generateBones("skin-test"), hat: "crown" as const };
+    const out = renderBuddy(bones, undefined, ["", "  ZZ{E}ZZ  ", "", "", ""]);
+    expect(out).toContain("ZZ");
+    expect(out.split("\n")[0]).not.toBe("");
   });
 });
