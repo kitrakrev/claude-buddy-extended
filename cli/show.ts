@@ -4,6 +4,7 @@
 
 import { renderBuddy, renderFace, RARITY_STARS } from "../core/engine.ts"
 import { loadCompanion, loadReaction } from "../server/state.ts";
+import { skinFor } from "../server/custom-art.ts";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -25,7 +26,7 @@ console.log("");
 
 const reaction = loadReaction();
 if (reaction) {
-  const face = renderFace(companion.bones.species, companion.bones.eye);
+  const face = renderFace(companion.bones.species, companion.bones.eye, skinFor(companion.bones)?.face);
   console.log(`  ${face} "${reaction.reaction}"`);
   console.log("");
 }

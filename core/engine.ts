@@ -129,6 +129,8 @@ export interface BuddyBones {
   stats: BuddyStats;
   peak: StatName;
   dump: StatName;
+  /** Opt-in custom skin name (see custom-art/README.md). Never replaces `species`. */
+  skin?: string;
 }
 
 export interface Companion {
@@ -387,7 +389,7 @@ export function generatePersonality(bones: BuddyBones, userId: string): string {
 
 // ─── ASCII Art ──────────────────────────────────────────────────────────────
 
-const FACE_TEMPLATES: Record<Species, string> = {
+export const FACE_TEMPLATES: Record<Species, string> = {
   duck: "({E}>",
   goose: "({E}>",
   blob: "({E}{E})",
@@ -410,8 +412,12 @@ const FACE_TEMPLATES: Record<Species, string> = {
   pikachu: "({E}ω{E})",
 };
 
-export function renderFace(species: Species, eye: string): string {
-  return FACE_TEMPLATES[species].replace(/\{E\}/g, resolveEyeGlyph(eye));
+/**
+ * Render a species face. `faceTemplate` lets callers pass a resolved custom
+ * skin face in (core never loads skins itself).
+ */
+export function renderFace(species: Species, eye: string, faceTemplate?: string): string {
+  return (faceTemplate ?? FACE_TEMPLATES[species]).replace(/\{E\}/g, resolveEyeGlyph(eye));
 }
 
 export function renderBuddy(bones: BuddyBones): string {
