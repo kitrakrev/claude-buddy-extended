@@ -38,12 +38,24 @@ rule are skipped):
 
 ```bash
 bun run skin check custom-art/fox-cat.json        # validate
-mkdir -p ~/.claude-buddy/custom-art                # or $CLAUDE_CONFIG_DIR/buddy-state/custom-art
+mkdir -p ~/.claude-buddy/custom-art                # see "Skin directory" below
 cp custom-art/fox-cat.json ~/.claude-buddy/custom-art/
 bun run skin                                       # list skins that fit your active buddy
 bun run skin fox-cat                               # wear it (active buddy only)
 bun run skin --clear                               # back to built-in art
 ```
+
+### Skin directory
+
+Skins are read from `<state-dir>/custom-art/`, where `<state-dir>` is the first
+that applies:
+
+1. `CODING_BUDDY_USER_ID` set (shared state): `$CODING_BUDDY_STATE_DIR`, or
+   `~/.coding-buddy/shared` when that is unset
+2. `CLAUDE_CONFIG_DIR` set: `$CLAUDE_CONFIG_DIR/buddy-state`
+3. otherwise: `~/.claude-buddy`
+
+`bun run skin` prints the exact directory it searched.
 
 The running MCP server picks up added, edited or removed skin files on the
 next render (cache is invalidated by file mtime/size) — no restart needed.

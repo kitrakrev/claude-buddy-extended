@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { MAX_SKIN_ART_WIDTH, resolveSkin, validateSkin } from "./custom-art.ts";
+import { MAX_SKIN_ART_WIDTH, skinLineWidth, resolveSkin, validateSkin } from "./custom-art.ts";
 
 const line = "     {E}    ";
 const good = () => ({
@@ -32,6 +32,12 @@ describe("validateSkin", () => {
   test("rejects over-wide lines", () => {
     const s = good();
     s.art[0][0] = "x".repeat(MAX_SKIN_ART_WIDTH + 1);
+    expect(validateSkin(s).errors.join()).toContain("exceeds");
+  });
+  test("counts emoji presentation (VS16) as two columns", () => {
+    expect(skinLineWidth("\u2764\ufe0f")).toBe(2);
+    const s = good();
+    s.art[0][0] = "\u2764\ufe0f".repeat(7);
     expect(validateSkin(s).errors.join()).toContain("exceeds");
   });
   test("rejects wrong frame shape", () => {

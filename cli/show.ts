@@ -18,7 +18,8 @@ if (!companion) {
 }
 
 console.log("");
-console.log(renderBuddy(companion.bones));
+const skin = skinFor(companion.bones);
+console.log(renderBuddy(companion.bones, skin?.face));
 console.log("");
 console.log(`  ${BOLD}${companion.name}${NC}`);
 console.log(`  ${DIM}${companion.personality}${NC}`);
@@ -26,7 +27,7 @@ console.log("");
 
 const reaction = loadReaction();
 if (reaction) {
-  const face = renderFace(companion.bones.species, companion.bones.eye, skinFor(companion.bones)?.face);
+  const face = renderFace(companion.bones.species, companion.bones.eye, skin?.face);
   console.log(`  ${face} "${reaction.reaction}"`);
   console.log("");
 }

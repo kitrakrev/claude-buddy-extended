@@ -420,8 +420,8 @@ export function renderFace(species: Species, eye: string, faceTemplate?: string)
   return (faceTemplate ?? FACE_TEMPLATES[species]).replace(/\{E\}/g, resolveEyeGlyph(eye));
 }
 
-export function renderBuddy(bones: BuddyBones): string {
-  const face = renderFace(bones.species, bones.eye);
+export function renderBuddy(bones: BuddyBones, faceTemplate?: string): string {
+  const face = renderFace(bones.species, bones.eye, faceTemplate);
   const hat = HAT_ART[bones.hat];
   const shiny = bones.shiny ? "\u2728 " : "";
   const stars = RARITY_STARS[bones.rarity];

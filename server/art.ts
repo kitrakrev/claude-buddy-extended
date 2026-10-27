@@ -505,7 +505,10 @@ export function renderStatusLine(
   name: string,
   reaction?: string,
 ): string {
-  const face = (skinFor(bones)?.art ?? SPECIES_ART[bones.species])[0][2]?.replace(/\{E\}/g, resolveEyeGlyph(bones.eye)).trim() || "(?)";
+  const skin = skinFor(bones);
+  const face =
+    (skin?.art ?? SPECIES_ART[bones.species])[0][2]?.replace(/\{E\}/g, resolveEyeGlyph(bones.eye)).trim() ||
+    renderFace(bones.species, bones.eye, skin?.face);
   const color = getRarityColor(bones.rarity);
   const stars = RARITY_STARS[bones.rarity];
   const shiny = bones.shiny ? "\u2728" : "";

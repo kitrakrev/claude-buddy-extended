@@ -31,9 +31,18 @@ const CONTROL_RE = /[\u0000-\u001f\u007f-\u009f]/;
 /** Terminal display width with `{E}` counted as one cell (the eye glyph). */
 export function skinLineWidth(line: string): number {
   let w = 0;
+  let upgradable = false; // matches server/art.ts displayWidth: VS16 widens a narrow emoji
   for (const ch of line.replaceAll(EYE, "e")) {
     const cp = ch.codePointAt(0)!;
-    if (cp === 0x200d || (cp >= 0xfe00 && cp <= 0xfe0f) || (cp >= 0x300 && cp <= 0x36f)) continue;
+    if (cp === 0xfe0f) {
+      if (upgradable) w += 1;
+      upgradable = false;
+      continue;
+    }
+    if (cp === 0x200d || (cp >= 0xfe00 && cp <= 0xfe0e) || (cp >= 0x300 && cp <= 0x36f)) {
+      upgradable = false;
+      continue;
+    }
     const wide =
       (cp >= 0x1100 && cp <= 0x115f) ||
       (cp >= 0x2e80 && cp <= 0xa4cf) ||
@@ -45,6 +54,7 @@ export function skinLineWidth(line: string): number {
       (cp >= 0x1f300 && cp <= 0x1faff) ||
       (cp >= 0x20000 && cp <= 0x3fffd);
     w += wide ? 2 : 1;
+    upgradable = !wide && /\p{Emoji}/u.test(ch);
   }
   return w;
 }
