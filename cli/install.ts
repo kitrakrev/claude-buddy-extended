@@ -156,7 +156,9 @@ function installSkill() {
   mkdirSync(BUDDY_DIR, { recursive: true });
   // Plugin installs get ${CLAUDE_PLUGIN_ROOT} from Claude Code; the manual
   // install has no plugin root, so pin the dispatcher path to this checkout.
-  const skill = readFileSync(srcSkill, "utf8").replaceAll("${CLAUDE_PLUGIN_ROOT}", PROJECT_ROOT);
+  // The path lands inside a double-quoted shell string, so escape \ " $ `.
+  const shellRoot = PROJECT_ROOT.replace(/[\\"$`]/g, "\\$&");
+  const skill = readFileSync(srcSkill, "utf8").replaceAll("${CLAUDE_PLUGIN_ROOT}", () => shellRoot);
   writeFileSync(join(BUDDY_DIR, "SKILL.md"), skill);
   ok(`Skill installed: ${join(BUDDY_DIR, "SKILL.md")}`);
 }

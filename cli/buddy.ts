@@ -56,22 +56,30 @@ export function parseCommand(argv: string[]): Dispatch {
   const cmd = (rawCmd ?? "show").toLowerCase();
   const first = rest[0];
   const text = rest.join(" ").trim();
+  // Surplus words must not silently run a different command (e.g. "show stats").
+  const noArgs = (tool: CommandName): Dispatch => {
+    if (rest.length > 0) throw new UsageError(`usage: ${cmd} (takes no arguments)`);
+    return { tool, args: {} };
+  };
+  const maxArgs = (n: number) => {
+    if (rest.length > n) throw new UsageError(`${cmd}: unexpected argument "${rest[n]}"`);
+  };
 
   switch (cmd) {
     case "show":
-      return { tool: "buddy_show", args: {} };
+      return noArgs("buddy_show");
     case "pet":
-      return { tool: "buddy_pet", args: {} };
+      return noArgs("buddy_pet");
     case "stats":
-      return { tool: "buddy_stats", args: {} };
+      return noArgs("buddy_stats");
     case "help":
-      return { tool: "buddy_help", args: {} };
+      return noArgs("buddy_help");
     case "off":
     case "mute":
-      return { tool: "buddy_mute", args: {} };
+      return noArgs("buddy_mute");
     case "on":
     case "unmute":
-      return { tool: "buddy_unmute", args: {} };
+      return noArgs("buddy_unmute");
     case "rename":
       if (!text) throw new UsageError("usage: rename <name>");
       return { tool: "buddy_rename", args: { name: text } };
@@ -79,53 +87,65 @@ export function parseCommand(argv: string[]): Dispatch {
       if (!text) throw new UsageError("usage: personality <text>");
       return { tool: "buddy_set_personality", args: { personality: text } };
     case "achievements":
-      return { tool: "buddy_achievements", args: {} };
+      return noArgs("buddy_achievements");
     case "xp":
-      return { tool: "buddy_xp", args: {} };
+      return noArgs("buddy_xp");
     case "upgrades":
+      maxArgs(1);
       return { tool: "buddy_upgrades", args: compact({ apply: first }) };
     case "mood":
-      return { tool: "buddy_mood", args: {} };
+      return noArgs("buddy_mood");
     case "memory":
       return { tool: "buddy_memory", args: parseMemoryFlags(rest) };
     case "summon":
+      maxArgs(1);
       return { tool: "buddy_summon", args: compact({ slot: first }) };
     case "save":
+      maxArgs(1);
       return { tool: "buddy_save", args: compact({ slot: first }) };
     case "list":
-      return { tool: "buddy_list", args: {} };
+      return noArgs("buddy_list");
     case "dismiss":
+      maxArgs(1);
       if (!first) throw new UsageError("usage: dismiss <slot>");
       return { tool: "buddy_dismiss", args: { slot: first } };
     case "pick":
       return {
         tool: "buddy_pick",
-        args: compact({ species: rest[0], rarity: rest[1], name: rest[2] }),
+        args: compact({ species: rest[0], rarity: rest[1], name: rest.slice(2).join(" ").trim() || undefined }),
       };
     case "frequency":
+      maxArgs(1);
       return { tool: "buddy_frequency", args: compact({ cooldown: toInt(first, "frequency") }) };
     case "style":
+      maxArgs(1);
       return { tool: "buddy_style", args: compact({ style: first }) };
     case "position":
+      maxArgs(1);
       return { tool: "buddy_style", args: compact({ position: first }) };
     case "rarity":
+      maxArgs(1);
       return {
         tool: "buddy_style",
         args: compact({ showRarity: first === undefined ? undefined : onOff(first, "rarity") }),
       };
     case "width":
+      maxArgs(1);
       return { tool: "buddy_style", args: compact({ width: toInt(first, "width") }) };
     case "margin":
+      maxArgs(1);
       return { tool: "buddy_style", args: compact({ margin: toInt(first, "margin") }) };
     case "rainbow":
       // No args shows current settings. `reset` sends [] exactly like the
       // skill's MCP routing did, so both paths share the same validation.
-      if (first === undefined) return { tool: "buddy_style", args: {} };
+      if (first === undefined) return noArgs("buddy_style");
       if (first.toLowerCase() === "reset") return { tool: "buddy_style", args: { rainbow: [] } };
       return { tool: "buddy_style", args: { rainbow: rest } };
     case "theme":
+      maxArgs(1);
       return { tool: "buddy_theme", args: compact({ theme: first }) };
     case "statusline":
+      maxArgs(1);
       return { tool: "buddy_statusline", args: parseStatusline(first) };
     default:
       throw new UsageError(`Unknown command: ${cmd}\nRun "bun run cli/buddy.ts help" for the list.`);

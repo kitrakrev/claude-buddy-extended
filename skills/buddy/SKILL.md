@@ -79,7 +79,7 @@ Argument mapping (pass args positionally after the command):
 | `rainbow [#hex.../reset]`| `buddy.ts rainbow [#hex.../reset]`       |
 | `statusline [on/off/combined/basic]` | `buddy.ts statusline [on/off/combined/basic]` |
 | `theme [dark/light/auto]` | `buddy.ts theme [dark/light/auto]`   |
-| `pick`                   | Tell user to run `! bun run pick` (interactive TUI) |
+| `pick`                   | Tell user to run `! bun run "${CLAUDE_PLUGIN_ROOT}/cli/pick.ts"` (interactive TUI) |
 | `uninstall`              | Run the uninstall sequence (see **Uninstall Orchestration** below) |
 
 Only two things still use the model, and neither is a typed command:

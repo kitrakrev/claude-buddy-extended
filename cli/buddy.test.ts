@@ -66,6 +66,14 @@ describe("parseCommand", () => {
     expect(() => parseCommand(["rename"])).toThrow(UsageError);
     expect(() => parseCommand(["width", "wide"])).toThrow(UsageError);
     expect(() => parseCommand(["statusline", "maybe"])).toThrow(UsageError);
+    expect(() => parseCommand(["show", "stats"])).toThrow(UsageError);
+    expect(() => parseCommand(["summon", "a", "b"])).toThrow(UsageError);
+  });
+
+  test("pick joins remaining words into the name; rainbow reset sends []", () => {
+    expect(parseCommand(["pick", "cat", "common", "Sir", "Bit"]))
+      .toEqual({ tool: "buddy_pick", args: { species: "cat", rarity: "common", name: "Sir Bit" } });
+    expect(parseCommand(["rainbow", "reset"])).toEqual({ tool: "buddy_style", args: { rainbow: [] } });
   });
 });
 
@@ -88,6 +96,29 @@ describe("cli dispatch", () => {
     expect(state<{ totalXp: number }>(root, "xp.json").totalXp).toBeGreaterThan(0);
     expect(state<{ source: string; reason: string }>(root, "reaction.default.json"))
       .toMatchObject({ source: "fallback", reason: "pet" });
+  });
+
+  test("second pet refreshes the status XP snapshot", () => {
+    const root = sandbox();
+    expect(runCli(root, "pet").code).toBe(0);
+    expect(runCli(root, "pet").code).toBe(0);
+    expect(state<{ xp?: number }>(root, "status.json").xp).toBeGreaterThan(0);
+  });
+
+  test("stats increments commands_run", () => {
+    const root = sandbox();
+    expect(runCli(root, "show").code).toBe(0);
+    const before = state<{ commands_run: number }>(root, "events.json").commands_run;
+    expect(runCli(root, "stats").code).toBe(0);
+    expect(state<{ commands_run: number }>(root, "events.json").commands_run).toBe(before + 1);
+  });
+
+  test("rainbow reset passes validation and clears custom colors", () => {
+    const root = sandbox();
+    expect(runCli(root, "rainbow", "#ff0000").code).toBe(0);
+    const r = runCli(root, "rainbow", "reset");
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("default (ROYGBIV)");
   });
 
   test("schema violations exit non-zero without mutating state", () => {
