@@ -7,7 +7,7 @@
  * ~/.claude/ layout when the env var is unset.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { execFileSync, execSync } from "child_process";
 import { resolve, dirname, join } from "path";
 
@@ -154,7 +154,10 @@ function installMcp(appDir: string) {
 function installSkill() {
   const srcSkill = join(PROJECT_ROOT, "skills", "buddy", "SKILL.md");
   mkdirSync(BUDDY_DIR, { recursive: true });
-  cpSync(srcSkill, join(BUDDY_DIR, "SKILL.md"), { force: true });
+  // Plugin installs get ${CLAUDE_PLUGIN_ROOT} from Claude Code; the manual
+  // install has no plugin root, so pin the dispatcher path to this checkout.
+  const skill = readFileSync(srcSkill, "utf8").replaceAll("${CLAUDE_PLUGIN_ROOT}", PROJECT_ROOT);
+  writeFileSync(join(BUDDY_DIR, "SKILL.md"), skill);
   ok(`Skill installed: ${join(BUDDY_DIR, "SKILL.md")}`);
 }
 
