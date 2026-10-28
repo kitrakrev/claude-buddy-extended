@@ -68,6 +68,7 @@ describe("parseCommand", () => {
     expect(() => parseCommand(["statusline", "maybe"])).toThrow(UsageError);
     expect(() => parseCommand(["show", "stats"])).toThrow(UsageError);
     expect(() => parseCommand(["summon", "a", "b"])).toThrow(UsageError);
+    expect(() => parseCommand(["rainbow", "reset", "red"])).toThrow(UsageError);
   });
 
   test("pick joins remaining words into the name; rainbow reset sends []", () => {
@@ -119,6 +120,13 @@ describe("cli dispatch", () => {
     const r = runCli(root, "rainbow", "reset");
     expect(r.code).toBe(0);
     expect(r.out).toContain("default (ROYGBIV)");
+  });
+
+  test("rainbow reset with extra args exits 1 without touching config", () => {
+    const root = sandbox();
+    const r = runCli(root, "rainbow", "reset", "red");
+    expect(r.code).toBe(1);
+    expect(r.err).toContain('unexpected argument "red"');
   });
 
   test("schema violations exit non-zero without mutating state", () => {

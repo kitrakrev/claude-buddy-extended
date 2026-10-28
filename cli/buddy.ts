@@ -139,7 +139,10 @@ export function parseCommand(argv: string[]): Dispatch {
       // No args shows current settings. `reset` sends [] exactly like the
       // skill's MCP routing did, so both paths share the same validation.
       if (first === undefined) return noArgs("buddy_style");
-      if (first.toLowerCase() === "reset") return { tool: "buddy_style", args: { rainbow: [] } };
+      if (first.toLowerCase() === "reset") {
+        maxArgs(1);
+        return { tool: "buddy_style", args: { rainbow: [] } };
+      }
       return { tool: "buddy_style", args: { rainbow: rest } };
     case "theme":
       maxArgs(1);
