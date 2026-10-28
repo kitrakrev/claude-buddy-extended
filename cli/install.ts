@@ -22,7 +22,7 @@ import {
 } from "../server/path.ts";
 import { loadCompanion, saveCompanion, resolveUserId, writeStatusState } from "../server/state.ts";
 import { generateFallbackName } from "../core/reactions.ts"
-import { copyRuntimeApp, stableRuntimePaths } from "./runtime-app.ts";
+import { copyRuntimeApp, renderInstalledSkill, stableRuntimePaths } from "./runtime-app.ts";
 
 /** Recognise any buddy-owned hook command, however it is pathed. */
 function isBuddyHookCommand(command: unknown): boolean {
@@ -151,14 +151,10 @@ function installMcp(appDir: string) {
 
 // ─── Step 2: Install skill ──────────────────────────────────────────────────
 
-function installSkill() {
+function installSkill(appDir: string) {
   const srcSkill = join(PROJECT_ROOT, "skills", "buddy", "SKILL.md");
   mkdirSync(BUDDY_DIR, { recursive: true });
-  // Plugin installs get ${CLAUDE_PLUGIN_ROOT} from Claude Code; the manual
-  // install has no plugin root, so pin the dispatcher path to this checkout.
-  // The path lands inside a double-quoted shell string, so escape \ " $ `.
-  const shellRoot = PROJECT_ROOT.replace(/[\\"$`]/g, "\\$&");
-  const skill = readFileSync(srcSkill, "utf8").replaceAll("${CLAUDE_PLUGIN_ROOT}", () => shellRoot);
+  const skill = renderInstalledSkill(readFileSync(srcSkill, "utf8"), appDir);
   writeFileSync(join(BUDDY_DIR, "SKILL.md"), skill);
   ok(`Skill installed: ${join(BUDDY_DIR, "SKILL.md")}`);
 }
@@ -339,7 +335,7 @@ const settings = loadSettings();
 const appDir = installRuntimeApp();
 
 installMcp(appDir);
-installSkill();
+installSkill(appDir);
 
 stripLegacyPopupHooks(settings);
 installStatusLine(settings, appDir);
