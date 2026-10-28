@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { renderFace } from "../../core/engine.ts";
+import { renderFace, type Companion } from "../../core/engine.ts";
 import { saveCompanion, loadReaction, saveReaction, type ReactionSource, writeStatusState } from "../state";
 import { getReaction } from "../../core/reactions.ts";
 import { renderCompanionCardMarkdown } from "../art";
@@ -7,6 +7,15 @@ import { incrementEvent, checkAndAward } from "../achievements";
 import { awardXp } from "../xp";
 import { ensureCompanion, activeSlot } from "./session.ts";
 import { defineCommand } from "./definition.ts";
+
+/**
+ * Face shown next to pet/react replies. Single seam for skin-aware faces:
+ * once custom art (#180) lands, resolve the companion's opt-in skin here and
+ * pass its face template as renderFace's third argument.
+ */
+function companionFace(companion: Companion): string {
+  return renderFace(companion.bones.species, companion.bones.eye);
+}
 
 function describeReactionSource(
   reaction: { source?: ReactionSource },
@@ -67,7 +76,7 @@ export const buddy_pet = defineCommand(
     incrementEvent("pets", 1, activeSlot());
     awardXp("buddy_pet", activeSlot(), companion.bones.species, companion.bones.rarity);
 
-    const face = renderFace(companion.bones.species, companion.bones.eye);
+    const face = companionFace(companion);
     const newAch = checkAndAward(activeSlot());
     const achNotice = newAch.length > 0
       ? `\n${newAch.map((a) => `${a.icon} Achievement Unlocked: ${a.name}!`).join("\n")}`
@@ -149,7 +158,7 @@ export const buddy_react = defineCommand(
     const achName = newAch.length > 0 ? newAch[0].icon + " " + newAch[0].name : undefined;
     writeStatusState(companion, comment, undefined, achName);
 
-    const face = renderFace(companion.bones.species, companion.bones.eye);
+    const face = companionFace(companion);
     const achNotice = newAch.length > 0
       ? `\n${newAch.map((a) => `${a.icon} Achievement Unlocked: ${a.name}!`).join("\n")}`
       : "";
